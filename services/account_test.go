@@ -6,7 +6,8 @@ import (
 
 func TestCreateAccountService(t *testing.T) {
 	documentNumber := "12345678900"
-	account := CreateAccount(documentNumber)
+	accountSvc := AccountService{}
+	account, _ := accountSvc.CreateAccount(documentNumber)
 
 	if account.DocumentNumber != documentNumber {
 		t.Errorf("expected document number %v, got %v", documentNumber, account.DocumentNumber)
@@ -19,9 +20,13 @@ func TestCreateAccountService(t *testing.T) {
 
 func TestGetAccountService(t *testing.T) {
 	documentNumber := "12345678900"
-	createdAccount := CreateAccount(documentNumber)
+	accountSvc := AccountService{}
 
-	account, err := GetAccount(createdAccount.AccountID)
+	createdAccount, err := accountSvc.CreateAccount(documentNumber)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	account, err := accountSvc.GetAccount(createdAccount.AccountID)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -36,7 +41,8 @@ func TestGetAccountService(t *testing.T) {
 }
 
 func TestGetAccountService_NotFound(t *testing.T) {
-	_, err := GetAccount(999)
+	accountSvc := AccountService{}
+	_, err := accountSvc.GetAccount(999)
 	if err == nil {
 		t.Error("expected error, got nil")
 	}

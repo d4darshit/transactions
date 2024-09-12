@@ -2,44 +2,46 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
-
-	"transactions/models"
 	"transactions/services"
 
 	"github.com/gorilla/mux"
 )
 
-// CreateAccount handles POST /accounts
+var accountService = services.AccountService{}
+
 func CreateAccount(w http.ResponseWriter, r *http.Request) {
-	var account models.Account
-	if err := json.NewDecoder(r.Body).Decode(&account); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+	var req struct {
+		DocumentNumber string `json:"document_number"`
+	}
+	json.NewDecoder(r.Body).Decode(&req)
+
+	account, err := accountService.CreateAccount(req.DocumentNumber)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	createdAccount := services.CreateAccount(account.DocumentNumber)
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(createdAccount)
+	json.NewEncoder(w).Encode(account)
 }
 
-// GetAccount handles GET /accounts/{accountId}
 func GetAccount(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	accountId, err := strconv.Atoi(vars["accountId"])
+	vars := mux.Vars(r) // Use mux to get URL parameters
+	idStr := vars["accountId"]
+	fmt.Println(r.URL.Query())
+	accountID, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Invalid account ID", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	account, err := services.GetAccount(accountId)
+	account, err := accountService.GetAccount(uint(accountID))
 	if err != nil {
-		http.Error(w, "Account not found", http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(account)
 }

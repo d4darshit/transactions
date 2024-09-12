@@ -1,13 +1,30 @@
 package models
 
-import "time"
+import (
+	"time"
+	"transactions/db"
+)
 
 type Transaction struct {
-	TransactionID   int       `json:"transaction_id"`
-	AccountID       int       `json:"account_id"`
-	OperationTypeID int       `json:"operation_type_id"`
-	Amount          float64   `json:"amount"`
-	EventDate       time.Time `json:"event_date"`
+	TransactionID   uint      `gorm:"primaryKey;autoIncrement" json:"transaction_id"`
+	AccountID       uint      `gorm:"not null" json:"account_id"`
+	OperationTypeID int       `gorm:"not null" json:"operation_type_id"`
+	Amount          float64   `gorm:"not null" json:"amount"`
+	EventDate       time.Time `gorm:"autoCreateTime" json:"event_date"`
 }
 
-var Transactions = make(map[int]Transaction)
+func CreateTransaction(accountID uint, operationTypeID int, amount float64) (*Transaction, error) {
+	transaction := &Transaction{
+		AccountID:       accountID,
+		OperationTypeID: operationTypeID,
+		Amount:          amount,
+	}
+	result := db.DB.Create(transaction)
+	return transaction, result.Error
+}
+
+func GetTransactionsByAccount(accountID uint) ([]Transaction, error) {
+	var transactions []Transaction
+	result := db.DB.Where("account_id = ?", accountID).Find(&transactions)
+	return transactions, result.Error
+}

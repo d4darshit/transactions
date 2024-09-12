@@ -1,29 +1,25 @@
-# Use the official Golang image as the base image
-FROM golang:1.20 AS builder
+# Dockerfile for Go application
+FROM golang:1.18-alpine
 
-# Set the Current Working Directory inside the container
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy go mod and sum files
-COPY go.mod go.sum ./
+# Copy Go modules manifests
+COPY go.mod ./
+COPY go.sum ./
+RUN go mod download
 
-# Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
-RUN go mod tidy
-
-# Copy the source code into the container
+# Copy the rest of the application code
 COPY . .
 
-# Build the Go app
-RUN go build -o main ./cmd/main.go
+# Build the Go app from the cmd folder
+RUN go build -o transactions-api ./cmd/main.go
 
-# Start a new stage from scratch
-FROM debian:bullseye-slim
-
-# Copy the Pre-built binary file from the previous stage
-COPY --from=builder /app/main /app/main
+# Ensure the binary is executable
+RUN chmod +x /app/transactions-api
 
 # Expose port 8080 to the outside world
 EXPOSE 8080
 
 # Command to run the executable
-CMD ["/app/main"]
+CMD ["/app/transactions-api"]

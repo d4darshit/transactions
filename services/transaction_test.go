@@ -6,14 +6,19 @@ import (
 )
 
 func TestCreateTransactionService(t *testing.T) {
-	account := CreateAccount("12345678900")
+	accountSvc := AccountService{}
+	account, err := accountSvc.CreateAccount("12345678900")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	transaction := models.Transaction{
 		AccountID:       account.AccountID,
 		OperationTypeID: 4,
 		Amount:          123.45,
 	}
 
-	createdTransaction, err := CreateTransaction(transaction)
+	transactionSvc := TransactionService{}
+	createdTransaction, err := transactionSvc.CreateTransaction(transaction.AccountID, transaction.OperationTypeID, transaction.Amount)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -38,7 +43,8 @@ func TestCreateTransactionService_AccountNotFound(t *testing.T) {
 		Amount:          -50.0,
 	}
 
-	_, err := CreateTransaction(transaction)
+	transactionSvc := TransactionService{}
+	_, err := transactionSvc.CreateTransaction(transaction.AccountID, transaction.OperationTypeID, transaction.Amount)
 	if err == nil {
 		t.Error("expected error, got nil")
 	}

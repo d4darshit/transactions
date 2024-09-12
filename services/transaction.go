@@ -1,20 +1,13 @@
 package services
 
-import (
-	"errors"
-	"time"
+import "transactions/models"
 
-	"transactions/models"
-)
+type TransactionService struct{}
 
-func CreateTransaction(transaction models.Transaction) (models.Transaction, error) {
-	if _, exists := models.Accounts[transaction.AccountID]; !exists {
-		return models.Transaction{}, errors.New("account not found")
-	}
+func (ts *TransactionService) CreateTransaction(accountID uint, operationTypeID int, amount float64) (*models.Transaction, error) {
+	return models.CreateTransaction(accountID, operationTypeID, amount)
+}
 
-	transaction.TransactionID = models.GetNextTransactionID()
-	transaction.EventDate = time.Now()
-
-	models.Transactions[transaction.TransactionID] = transaction
-	return transaction, nil
+func (ts *TransactionService) GetTransactionsByAccount(accountID uint) ([]models.Transaction, error) {
+	return models.GetTransactionsByAccount(accountID)
 }

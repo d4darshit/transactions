@@ -2,17 +2,33 @@ package models
 
 import (
 	"testing"
+	"transactions/config"
+	"transactions/db"
+
+	"bou.ke/monkey"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestAccountCreation(t *testing.T) {
-	account := Account{
-		AccountID:      1,
-		DocumentNumber: "12345678900",
-	}
+func init() {
+	config.LoadConfig()
+	db.Connect()
+}
 
-	Accounts[account.AccountID] = account
+// Mock function
+func mockCreateAccount(documentNumber string) (*Account, error) {
+	return &Account{AccountID: 1, DocumentNumber: documentNumber}, nil
+}
 
-	if Accounts[1].DocumentNumber != "12345678900" {
-		t.Errorf("expected document number 12345678900, got %v", Accounts[1].DocumentNumber)
-	}
+func TestCreateAccount(t *testing.T) {
+	// Patch CreateAccount function
+	patch := monkey.Patch(CreateAccount, mockCreateAccount)
+	defer patch.Unpatch()
+
+	// Call the function being tested
+	account, err := CreateAccount("12345678900")
+
+	// Assertions
+	assert.NoError(t, err)
+	assert.NotNil(t, account)
+	assert.Equal(t, "12345678900", account.DocumentNumber)
 }

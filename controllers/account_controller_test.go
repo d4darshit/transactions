@@ -5,8 +5,12 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"transactions/db"
 )
 
+func init() {
+	db.Connect()
+}
 func TestCreateAccount(t *testing.T) {
 	req, err := http.NewRequest("POST", "/accounts", strings.NewReader(`{"document_number": "12345678900"}`))
 	if err != nil {
