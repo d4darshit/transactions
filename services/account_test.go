@@ -1,53 +1,52 @@
+// services/account_impl_test.go
 package services
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"transactions/contracts"
+	"transactions/models"
 )
 
-func TestCreateAccountService(t *testing.T) {
-	documentNumber := "12345678900"
-	accountSvc := AccountService{}
-	account, _ := accountSvc.CreateAccount(documentNumber)
+// Test CreateAccount method of AccountImpl
+func TestCreateAccount(t *testing.T) {
+	mockRepo := new(MockAccountRepo)
+	service := NewAccountService(mockRepo)
 
-	if account.DocumentNumber != documentNumber {
-		t.Errorf("expected document number %v, got %v", documentNumber, account.DocumentNumber)
-	}
+	// Define input and expected output
+	req := contracts.CreateAccountRequest{DocumentNumber: "12345678900"}
+	expectedAccount := &models.Account{AccountID: 1, DocumentNumber: "12345678900"}
 
-	if account.AccountID == 0 {
-		t.Errorf("expected a valid account ID, got %v", account.AccountID)
-	}
+	// Set up expectations
+	mockRepo.On("CreateAccount", "12345678900").Return(expectedAccount, nil)
+
+	// Call the method being tested
+	account, err := service.CreateAccount(req)
+
+	// Assertions
+	assert.NoError(t, err)
+	assert.Equal(t, expectedAccount, account)
+	mockRepo.AssertExpectations(t)
 }
 
-func TestGetAccountService(t *testing.T) {
-	documentNumber := "12345678900"
-	accountSvc := AccountService{}
+// Test GetAccount method of AccountImpl
+func TestGetAccount(t *testing.T) {
+	mockRepo := new(MockAccountRepo)
+	service := NewAccountService(mockRepo)
 
-	createdAccount, err := accountSvc.CreateAccount(documentNumber)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	account, err := accountSvc.GetAccount(createdAccount.AccountID)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
+	// Define input and expected output
+	req := contracts.GetAccountRequest{AccountId: 1}
+	expectedAccount := &models.Account{AccountID: 1, DocumentNumber: "12345678900"}
 
-	if account.AccountID != createdAccount.AccountID {
-		t.Errorf("expected account ID %v, got %v", createdAccount.AccountID, account.AccountID)
-	}
+	// Set up expectations
+	mockRepo.On("GetAccount", uint(1)).Return(expectedAccount, nil)
 
-	if account.DocumentNumber != createdAccount.DocumentNumber {
-		t.Errorf("expected document number %v, got %v", createdAccount.DocumentNumber, account.DocumentNumber)
-	}
-}
+	// Call the method being tested
+	account, err := service.GetAccount(req)
 
-func TestGetAccountService_NotFound(t *testing.T) {
-	accountSvc := AccountService{}
-	_, err := accountSvc.GetAccount(999)
-	if err == nil {
-		t.Error("expected error, got nil")
-	}
-
-	if err.Error() != "account not found" {
-		t.Errorf("expected 'account not found', got %v", err.Error())
-	}
+	// Assertions
+	assert.NoError(t, err)
+	assert.Equal(t, expectedAccount, account)
+	mockRepo.AssertExpectations(t)
 }

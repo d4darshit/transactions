@@ -16,17 +16,20 @@ This project is a simple transactions API written in Go. It allows you to manage
 
 ### Running Test Cases
 
-Command - go test ./..
+Command - go test ./...
 
 ## Running the Application
 
-### Using Docker-Compose
+
+ Using Docker-Compose
 ---
 This spins up application as well as MySQL DB. Change values in .env as suitable
 
 command -
 
 1. docker compose up --build
+
+In order to delete docker volume storage, run docker compose down -v
 
 ### Using Docker
 1. Changes values in .env file for Database connection
@@ -37,6 +40,6 @@ command -
 
 
 #### Running without docker
-
+Prerequisites- DB should be up and running in port mentioned in .env file
 1. go mod tidy 
 2. go run ./cmd/main.go

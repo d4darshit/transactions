@@ -12,9 +12,14 @@ import (
 var DB *gorm.DB
 
 func Connect() {
+
+	//this prevents from reinitialization
+	if DB != nil {
+		return
+	}
 	dbConfig := config.AppConfig.Database
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
 		dbConfig.User,
 		dbConfig.Password,
 		dbConfig.Host,
@@ -28,4 +33,11 @@ func Connect() {
 	}
 
 	log.Println("Connected to MySQL with GORM!")
+}
+func GetDB() *gorm.DB {
+	if DB != nil {
+		return DB
+	}
+	Connect()
+	return DB
 }

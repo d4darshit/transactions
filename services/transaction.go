@@ -2,12 +2,24 @@ package services
 
 import "transactions/models"
 
-type TransactionService struct{}
-
-func (ts *TransactionService) CreateTransaction(accountID uint, operationTypeID int, amount float64) (*models.Transaction, error) {
-	return models.CreateTransaction(accountID, operationTypeID, amount)
+type TransactionSvc interface {
+	CreateTransaction(accountID uint, operationTypeID int, amount float64) (*models.Transaction, error)
+	GetTransactionsByAccount(accountID uint) ([]models.Transaction, error)
 }
 
-func (ts *TransactionService) GetTransactionsByAccount(accountID uint) ([]models.Transaction, error) {
-	return models.GetTransactionsByAccount(accountID)
+type TransactionImpl struct {
+	Repo models.TransactionRepo
+}
+
+func NewTransactionService(transactionRepo models.TransactionRepo) TransactionSvc {
+	return &TransactionImpl{
+		Repo: transactionRepo,
+	}
+}
+func (ts *TransactionImpl) CreateTransaction(accountID uint, operationTypeID int, amount float64) (*models.Transaction, error) {
+	return ts.Repo.CreateTransaction(accountID, operationTypeID, amount)
+}
+
+func (ts *TransactionImpl) GetTransactionsByAccount(accountID uint) ([]models.Transaction, error) {
+	return ts.Repo.GetTransactionsByAccount(accountID)
 }

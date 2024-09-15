@@ -6,6 +6,7 @@ import (
 )
 
 type Transaction struct {
+	BaseModel                 // default columns
 	TransactionID   uint      `gorm:"primaryKey;autoIncrement" json:"transaction_id"`
 	AccountID       uint      `gorm:"not null" json:"account_id"`
 	OperationTypeID int       `gorm:"not null" json:"operation_type_id"`
@@ -13,18 +14,29 @@ type Transaction struct {
 	EventDate       time.Time `gorm:"autoCreateTime" json:"event_date"`
 }
 
-func CreateTransaction(accountID uint, operationTypeID int, amount float64) (*Transaction, error) {
+type TransactionRepo interface {
+	CreateTransaction(accountID uint, operationTypeID int, amount float64) (*Transaction, error)
+	GetTransactionsByAccount(accountID uint) ([]Transaction, error)
+}
+type TransactionImpl struct {
+}
+
+func NewTransactionRepo() TransactionRepo {
+	return TransactionImpl{}
+}
+
+func (t TransactionImpl) CreateTransaction(accountID uint, operationTypeID int, amount float64) (*Transaction, error) {
 	transaction := &Transaction{
 		AccountID:       accountID,
 		OperationTypeID: operationTypeID,
 		Amount:          amount,
 	}
-	result := db.DB.Create(transaction)
+	result := db.GetDB().Create(transaction)
 	return transaction, result.Error
 }
 
-func GetTransactionsByAccount(accountID uint) ([]Transaction, error) {
+func (t TransactionImpl) GetTransactionsByAccount(accountID uint) ([]Transaction, error) {
 	var transactions []Transaction
-	result := db.DB.Where("account_id = ?", accountID).Find(&transactions)
+	result := db.GetDB().Where("account_id = ?", accountID).Find(&transactions)
 	return transactions, result.Error
 }
